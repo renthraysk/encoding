@@ -56,7 +56,6 @@ var parseTests = map[string]EncodingSet{
 }
 
 func TestParse(t *testing.T) {
-	nZero := testing.AllocsPerRun(1, func() {})
 
 	n := testing.AllocsPerRun(1, func() {
 		for acceptEncoding, expected := range parseTests {
@@ -65,8 +64,8 @@ func TestParse(t *testing.T) {
 				t.Fatalf("Parse(%q): expected %q, got %q", acceptEncoding, expected, got)
 			}
 		}
-	}) - nZero
-	if n != 0 {
+	})
+	if testing.CoverMode() == "" && n != 0 {
 		t.Fatalf("expected Parse() not to allocate, allocated %v times", n)
 	}
 }
