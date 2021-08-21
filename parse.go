@@ -90,8 +90,9 @@ func Parse(acceptEncoding string) EncodingSet {
 	switch acceptEncoding {
 	case "", "*":
 		return allSet
+	case "gzip, deflate":
+		return 1<<Gzip | 1<<Deflate | 1<<Identity
 	case "gzip, deflate, br":
-		// Overwhelming majority of modern browsers.
 		return 1<<Gzip | 1<<Deflate | 1<<Brotli | 1<<Identity
 	}
 
