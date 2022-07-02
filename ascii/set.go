@@ -16,16 +16,22 @@ const (
 
 // Contains returns true if byte c is a member of set, false otherwise.
 func (set set64) Contains(c byte) bool {
-	return c < 64 && (1<<c)&set != 0
+	s := set
+	if c >= 64 {
+		s = 0
+	}
+	return (1<<(c%64))&s != 0
 }
 
 // TrimString removes characters in the set from the beginning and end of s.
 func (set set64) TrimString(s string) string {
-	for len(s) > 0 && set.Contains(s[0]) {
-		s = s[1:]
+	i := 0
+	for i < len(s) && set.Contains(s[i]) {
+		i++
 	}
-	for len(s) > 0 && set.Contains(s[len(s)-1]) {
-		s = s[:len(s)-1]
+	n := len(s)
+	for n > i && set.Contains(s[n-1]) {
+		n--
 	}
-	return s
+	return s[i:n]
 }
