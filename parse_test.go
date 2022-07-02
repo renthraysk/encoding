@@ -21,8 +21,11 @@ func TestEncodingLookup(t *testing.T) {
 	if e, ok := encodingSet(Brotli.String()); !ok || e != 1<<Brotli {
 		t.Fatalf("expected %q to return constant %s(%d)", Brotli.String(), e, e)
 	}
-	// Brotli is the last supported encoding, make sure test is update if another is added.
-	if _, ok := encodingSet((Brotli + 1).String()); ok {
+	if e, ok := encodingSet(Zstd.String()); !ok || e != 1<<Zstd {
+		t.Fatalf("expected %q to return constant %s(%d)", Zstd.String(), e, e)
+	}
+	// Zstd is the last supported encoding, make sure test is update if another is added.
+	if _, ok := encodingSet((Zstd + 1).String()); ok {
 		t.Fatalf("TestEncodingLookup needs updating with new encoding")
 	}
 }
@@ -53,6 +56,9 @@ var parseTests = map[string]EncodingSet{
 	"ABCDEFGHIJKLMNOPQRSTUVWXYZ012345":   1 << Identity,
 	"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456":  1 << Identity,
 	"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz, gzip": 1<<Gzip | 1<<Identity,
+
+	"zstd":     1<<Zstd | 1<<Identity,
+	"zstd;q=0": 1 << Identity,
 }
 
 func TestParse(t *testing.T) {

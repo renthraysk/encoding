@@ -16,6 +16,7 @@ const (
 	Compress
 	Gzip
 	Brotli
+	Zstd
 )
 
 const (
@@ -23,10 +24,10 @@ const (
 )
 
 func (e Encoding) String() string {
-	const names string = "identity" + "deflate" + "compress" + "gzip" + "br"
-	const index string = "\x00\x08\x0F\x17\x1B\x1D"
+	const names string = "identity" + "deflate" + "compress" + "gzip" + "br" + "zstd"
+	const index string = "\x00\x08\x0F\x17\x1B\x1D\x21"
 
-	if e <= Brotli {
+	if e <= Zstd {
 		return names[index[e]:index[e+1]]
 	}
 	return "encoding(" + strconv.FormatUint(uint64(e), 10) + ")"
@@ -36,7 +37,7 @@ func (e Encoding) String() string {
 type EncodingSet uint32
 
 const (
-	allSet EncodingSet = 1<<Gzip | 1<<Deflate | 1<<Brotli | 1<<Identity | 1<<Compress
+	allSet EncodingSet = 1<<Gzip | 1<<Deflate | 1<<Brotli | 1<<Identity | 1<<Compress | 1<<Zstd
 )
 
 // Contains returns true if EncodingSet es contains Encoding e, false otherwise.
@@ -78,6 +79,8 @@ func encodingSet(name string) (EncodingSet, bool) {
 		return 1 << Gzip, true
 	case "br":
 		return 1 << Brotli, true
+	case "zstd":
+		return 1 << Zstd, true
 	case "*":
 		return allSet, true
 	}
