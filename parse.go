@@ -19,10 +19,6 @@ const (
 	Zstd
 )
 
-const (
-	maxEncodingNameLen = len("identity") // NOTE: potentially needs to be updated if new encodings added.
-)
-
 func (e Encoding) String() string {
 	const names string = "identity" + "deflate" + "compress" + "gzip" + "br" + "zstd"
 	const index string = "\x00\x08\x0F\x17\x1B\x1D\x21"
@@ -62,8 +58,16 @@ func (es EncodingSet) String() string {
 
 // encodingSet returns relevant EncodingSet value if it's recognised, 0 and false otherwise.
 func encodingSet(name string) (EncodingSet, bool) {
+	const maxNameLen = max(
+		len("identity"),
+		len("deflate"),
+		len("compress"),
+		len("gzip"),
+		len("br"),
+		len("zstd"))
+
 	n := ascii.HorizontalSpace.TrimString(name)
-	if len(n) > maxEncodingNameLen {
+	if len(n) > maxNameLen {
 		// avoid the ToLowerString call and a possible pointless allocation
 		// for a name that is too long to match any known encoding.
 		return 0, false
@@ -97,6 +101,8 @@ func Parse(acceptEncoding string) EncodingSet {
 		return 1<<Gzip | 1<<Deflate | 1<<Identity
 	case "gzip, deflate, br":
 		return 1<<Gzip | 1<<Deflate | 1<<Brotli | 1<<Identity
+	case "gzip, deflate, br, zstd":
+		return 1<<Gzip | 1<<Deflate | 1<<Brotli | 1<<Zstd | 1<<Identity
 	}
 
 	var supported, unsupported EncodingSet
