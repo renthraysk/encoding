@@ -17,13 +17,16 @@ const (
 	Gzip
 	Brotli
 	Zstd
+
+	DCB
+	DCZ
 )
 
 func (e Encoding) String() string {
-	const names string = "identity" + "deflate" + "compress" + "gzip" + "br" + "zstd"
-	const index string = "\x00\x08\x0F\x17\x1B\x1D\x21"
+	const names string = "identity" + "deflate" + "compress" + "gzip" + "br" + "zstd" + "dcb" + "dcz"
+	const index string = "\x00\x08\x0F\x17\x1B\x1D\x21\x24\x27"
 
-	if e <= Zstd {
+	if Identity <= e && e <= DCZ {
 		return names[index[e]:index[e+1]]
 	}
 	return "encoding(" + strconv.FormatUint(uint64(e), 10) + ")"
@@ -44,7 +47,7 @@ func (es EncodingSet) Contains(e Encoding) bool {
 func (es EncodingSet) String() string {
 	var s strings.Builder
 
-	for e := Identity; e <= Brotli; e++ {
+	for e := Identity; e <= DCZ; e++ {
 		if !es.Contains(e) {
 			continue
 		}
@@ -64,12 +67,12 @@ func encodingSet(name string) (EncodingSet, bool) {
 		len("compress"),
 		len("gzip"),
 		len("br"),
-		len("zstd"))
+		len("zstd"),
+		len("dcb"),
+		len("dcz"))
 
 	n := ascii.HorizontalSpace.TrimString(name)
 	if len(n) > maxNameLen {
-		// avoid the ToLowerString call and a possible pointless allocation
-		// for a name that is too long to match any known encoding.
 		return 0, false
 	}
 	switch ascii.ToLowerString(n) {
@@ -85,6 +88,10 @@ func encodingSet(name string) (EncodingSet, bool) {
 		return 1 << Brotli, true
 	case "zstd":
 		return 1 << Zstd, true
+	case "dcb":
+		return 1 << DCB, true
+	case "dcz":
+		return 1 << DCZ, true
 	case "*":
 		return allSet, true
 	}
@@ -103,6 +110,8 @@ func Parse(acceptEncoding string) EncodingSet {
 		return 1<<Gzip | 1<<Deflate | 1<<Brotli | 1<<Identity
 	case "gzip, deflate, br, zstd":
 		return 1<<Gzip | 1<<Deflate | 1<<Brotli | 1<<Zstd | 1<<Identity
+	case "gzip, deflate, br, zstd, dcb, dcz":
+		return 1<<Gzip | 1<<Deflate | 1<<Brotli | 1<<Zstd | 1<<DCB | 1<<DCZ | 1<<Identity
 	}
 
 	var supported, unsupported EncodingSet

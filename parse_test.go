@@ -7,26 +7,32 @@ import (
 func TestEncodingLookup(t *testing.T) {
 
 	if e, ok := encodingSet(Identity.String()); !ok || e != 1<<Identity {
-		t.Fatalf("expected %q to return constant %s(%d)", Identity.String(), e, e)
+		t.Errorf("expected %q to return constant %s(%d)", Identity.String(), e, e)
 	}
 	if e, ok := encodingSet(Deflate.String()); !ok || e != 1<<Deflate {
-		t.Fatalf("expected %q to return constant %s(%d)", Deflate.String(), e, e)
+		t.Errorf("expected %q to return constant %s(%d)", Deflate.String(), e, e)
 	}
 	if e, ok := encodingSet(Compress.String()); !ok || e != 1<<Compress {
-		t.Fatalf("expected %q to return constant %s(%d)", Compress.String(), e, e)
+		t.Errorf("expected %q to return constant %s(%d)", Compress.String(), e, e)
 	}
 	if e, ok := encodingSet(Gzip.String()); !ok || e != 1<<Gzip {
-		t.Fatalf("expected %q to return constant %s(%d)", Gzip.String(), e, e)
+		t.Errorf("expected %q to return constant %s(%d)", Gzip.String(), e, e)
 	}
 	if e, ok := encodingSet(Brotli.String()); !ok || e != 1<<Brotli {
-		t.Fatalf("expected %q to return constant %s(%d)", Brotli.String(), e, e)
+		t.Errorf("expected %q to return constant %s(%d)", Brotli.String(), e, e)
 	}
 	if e, ok := encodingSet(Zstd.String()); !ok || e != 1<<Zstd {
-		t.Fatalf("expected %q to return constant %s(%d)", Zstd.String(), e, e)
+		t.Errorf("expected %q to return constant %s(%d)", Zstd.String(), e, e)
+	}
+	if e, ok := encodingSet(DCZ.String()); !ok || e != 1<<DCZ {
+		t.Errorf("expected %q to return constant %s(%d)", DCZ.String(), e, e)
+	}
+	if e, ok := encodingSet(DCB.String()); !ok || e != 1<<DCB {
+		t.Errorf("expected %q to return constant %s(%d)", DCB.String(), e, e)
 	}
 	// Zstd is the last supported encoding, make sure test is update if another is added.
-	if _, ok := encodingSet((Zstd + 1).String()); ok {
-		t.Fatalf("TestEncodingLookup needs updating with new encoding")
+	if _, ok := encodingSet((DCZ + 1).String()); ok {
+		t.Errorf("TestEncodingLookup needs updating with new encoding")
 	}
 }
 
@@ -59,6 +65,12 @@ var parseTests = map[string]EncodingSet{
 
 	"zstd":     1<<Zstd | 1<<Identity,
 	"zstd;q=0": 1 << Identity,
+
+	"dcz": 1<<DCZ | 1<<Identity,
+	"dcb": 1<<DCB | 1<<Identity,
+
+	"dcz;q=0": 1 << Identity,
+	"dcb;q=0": 1 << Identity,
 }
 
 func TestParse(t *testing.T) {
@@ -67,11 +79,11 @@ func TestParse(t *testing.T) {
 		for acceptEncoding, expected := range parseTests {
 			got := Parse(acceptEncoding)
 			if expected != got {
-				t.Fatalf("Parse(%q): expected %q, got %q", acceptEncoding, expected, got)
+				t.Errorf("Parse(%q): expected %q, got %q", acceptEncoding, expected, got)
 			}
 		}
 	})
 	if testing.CoverMode() == "" && n != 0 {
-		t.Fatalf("expected Parse() not to allocate, allocated %v times", n)
+		t.Errorf("expected Parse() not to allocate, allocated %v times", n)
 	}
 }
