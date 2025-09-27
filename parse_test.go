@@ -6,32 +6,32 @@ import (
 
 func TestEncodingLookup(t *testing.T) {
 
-	if e, ok := encodingSet(Identity.String()); !ok || e != 1<<Identity {
+	if e, ok := ParseEncoding(Identity.String()); !ok || e != Identity {
 		t.Errorf("expected %q to return constant %s(%d)", Identity.String(), e, e)
 	}
-	if e, ok := encodingSet(Deflate.String()); !ok || e != 1<<Deflate {
+	if e, ok := ParseEncoding(Deflate.String()); !ok || e != Deflate {
 		t.Errorf("expected %q to return constant %s(%d)", Deflate.String(), e, e)
 	}
-	if e, ok := encodingSet(Compress.String()); !ok || e != 1<<Compress {
+	if e, ok := ParseEncoding(Compress.String()); !ok || e != Compress {
 		t.Errorf("expected %q to return constant %s(%d)", Compress.String(), e, e)
 	}
-	if e, ok := encodingSet(Gzip.String()); !ok || e != 1<<Gzip {
+	if e, ok := ParseEncoding(Gzip.String()); !ok || e != Gzip {
 		t.Errorf("expected %q to return constant %s(%d)", Gzip.String(), e, e)
 	}
-	if e, ok := encodingSet(Brotli.String()); !ok || e != 1<<Brotli {
+	if e, ok := ParseEncoding(Brotli.String()); !ok || e != Brotli {
 		t.Errorf("expected %q to return constant %s(%d)", Brotli.String(), e, e)
 	}
-	if e, ok := encodingSet(Zstd.String()); !ok || e != 1<<Zstd {
+	if e, ok := ParseEncoding(Zstd.String()); !ok || e != Zstd {
 		t.Errorf("expected %q to return constant %s(%d)", Zstd.String(), e, e)
 	}
-	if e, ok := encodingSet(DCZ.String()); !ok || e != 1<<DCZ {
+	if e, ok := ParseEncoding(DCZ.String()); !ok || e != DCZ {
 		t.Errorf("expected %q to return constant %s(%d)", DCZ.String(), e, e)
 	}
-	if e, ok := encodingSet(DCB.String()); !ok || e != 1<<DCB {
+	if e, ok := ParseEncoding(DCB.String()); !ok || e != DCB {
 		t.Errorf("expected %q to return constant %s(%d)", DCB.String(), e, e)
 	}
 	// Zstd is the last supported encoding, make sure test is update if another is added.
-	if _, ok := encodingSet((DCZ + 1).String()); ok {
+	if _, ok := ParseEncoding((DCZ + 1).String()); ok {
 		t.Errorf("TestEncodingLookup needs updating with new encoding")
 	}
 }
@@ -77,7 +77,7 @@ func TestParse(t *testing.T) {
 
 	n := testing.AllocsPerRun(1, func() {
 		for acceptEncoding, expected := range parseTests {
-			got := Parse(acceptEncoding)
+			got := ParseAcceptEncoding(acceptEncoding)
 			if expected != got {
 				t.Errorf("Parse(%q): expected %q, got %q", acceptEncoding, expected, got)
 			}

@@ -59,23 +59,50 @@ func (es EncodingSet) String() string {
 	return s.String()
 }
 
-// encodingSet returns relevant EncodingSet value if it's recognised, 0 and false otherwise.
-func encodingSet(name string) (EncodingSet, bool) {
-	const maxNameLen = max(
-		len("identity"),
-		len("deflate"),
-		len("compress"),
-		len("gzip"),
-		len("br"),
-		len("zstd"),
-		len("dcb"),
-		len("dcz"))
+const maxNameLen = max(
+	len("identity"),
+	len("deflate"),
+	len("compress"),
+	len("gzip"),
+	len("br"),
+	len("zstd"),
+	len("dcb"),
+	len("dcz"))
 
+func ParseEncoding(name string) (Encoding, bool) {
 	n := ascii.HorizontalSpace.TrimString(name)
 	if len(n) > maxNameLen {
 		return 0, false
 	}
 	switch ascii.ToLowerString(n) {
+	case "identity":
+		return Identity, true
+	case "deflate":
+		return Deflate, true
+	case "compress":
+		return Compress, true
+	case "gzip":
+		return Gzip, true
+	case "br":
+		return Brotli, true
+	case "zstd":
+		return Zstd, true
+	case "dcb":
+		return DCB, true
+	case "dcz":
+		return DCZ, true
+	}
+	return 0, false
+}
+
+func parseEncodingSet(name string) (EncodingSet, bool) {
+	n := ascii.HorizontalSpace.TrimString(name)
+	if len(n) > maxNameLen {
+		return 0, false
+	}
+	switch ascii.ToLowerString(n) {
+	case "*":
+		return allSet, true
 	case "identity":
 		return 1 << Identity, true
 	case "deflate":
@@ -92,14 +119,12 @@ func encodingSet(name string) (EncodingSet, bool) {
 		return 1 << DCB, true
 	case "dcz":
 		return 1 << DCZ, true
-	case "*":
-		return allSet, true
 	}
 	return 0, false
 }
 
-// Parse parses an Accept-Encoding client request header and returns the set of supported encodings
-func Parse(acceptEncoding string) EncodingSet {
+// ParseAcceptEncoding parses an Accept-Encoding client request header and returns the set of supported encodings
+func ParseAcceptEncoding(acceptEncoding string) EncodingSet {
 	// Some common Accept-Encodings hardcoded to avoid actual parsing
 	switch acceptEncoding {
 	case "", "*":
@@ -121,7 +146,7 @@ func Parse(acceptEncoding string) EncodingSet {
 
 		part, acceptEncoding = ascii.CutString(acceptEncoding, ',')
 		name, part = ascii.CutString(part, ';')
-		if encoding, ok := encodingSet(name); ok {
+		if encoding, ok := parseEncodingSet(name); ok {
 			for len(part) > 0 {
 				pair, part = ascii.CutString(part, ';')
 				pair = ascii.HorizontalSpace.TrimString(pair)
